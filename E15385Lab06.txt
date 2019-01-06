@@ -1,0 +1,293 @@
+﻿1. Create a table named Student to insert the above data. Determine a suitable primary key for this table. Populate your table with these data. 
+
+MariaDB [e15385Lab04]>  Create table student(
+	name varchar(20) not null,
+	reg_no varchar(5) not null,
+	gpa double not null,
+	convocation_reg_no varchar(6),
+	class varchar(40),
+
+	primary key(reg_no)
+    );
+Query OK, 0 rows affected (0.40 sec)
+
+MariaDB [e15385Lab04]> show tables;
++-----------------------+
+| Tables_in_e15385lab04 |
++-----------------------+
+| movie                 |
+| rating                |
+| reviewer              |
+| student               |
++-----------------------+
+4 rows in set (0.11 sec)
+
+MariaDB [e15385Lab04]> describe student;
++---------------------------------+-------------+------+-----+---------+-------+
+
+| Field                           | Type        | Null | Key | Default | Extra |
+
++---------------------------------+-------------+------+-----+---------+-------+
+
+| NAME                            | varchar(20) | NO   |     | NULL    |       |
+
+| REGISTRATION_NUMBER             | int(11)     | NO   | PRI | NULL    |       |
+
+| GPA                             | float       | NO   |     | NULL    |       |
+
+| CONVOCATION_REGISTRATION_NUMBER | int(11)     | YES  |     | NULL    |       |
+
+| CLASS                           | varchar(10) | YES  |     | NULL    |       |
+
++---------------------------------+-------------+------+-----+---------+-------+
+
+5 rows in set (0.09 sec)
+
+
+MariaDB [e15385Lab04]> load data local infile 'C:/Users/User/Desktop/Database la
+bs/lab 06/Student.txt' into table STUDENT fields terminated by ',' lines termina
+ted by '\n';
+Query OK, 11 rows affected, 25 warnings (0.10 sec)
+Records: 11  Deleted: 0  Skipped: 0  Warnings: 25
+
+
+
+MariaDB [e15385Lab04]> select * from student;
+select * from student;
++----------+--------+------+--------------------+-------+
+| name     | reg_no | gpa  | convocation_reg_no | class |
++----------+--------+------+--------------------+-------+
+| Kumudu   | 111    |  3.7 | NULL               | NULL  |
+| Kalpa    | 201    |  3.1 | NULL               | NULL  |
+| Kasun    | 210    |  3.4 | NULL               | NULL  |
+| Chithra  | 231    |  3.3 | NULL               | NULL  |
+| Chathura | 312    | 3.85 | NULL               | NULL  |
+| Rohani   | 324    |  3.7 | NULL               | NULL  |
+| Sidath   | 352    |  3.3 | NULL               | NULL  |
+| Sameera  | 425    | 3.25 | NULL               | NULL  |
+| Nalin    | 456    | 3.05 | NULL               | NULL  |
+| Lakmali  | 473    | 3.75 | NULL               | NULL  |
++----------+--------+------+--------------------+-------+
+
+2. Create another table named Convocation to store the details about the registration to the convocation. Table should have ﬁelds to hold the Last Name, Address, Age, Registration Number and Convocation Registration Number of each student. The Convocation Registration Number is given when a student registers for the convocation. Determine a suitable primary key and a foreign key for this table. 
+
+
+MariaDB [e15385lab04]> Create table convocation(last_name varchar(30) not null,address varchar(100) not null,age varchar(4) not null,reg_no varchar(10) not null,convocation_reg_no varchar(10) not null,primary key(convocation_reg_no),foreign key reg_no(reg_no) references student(reg_no) on delete cascade on update cascade);
+Query OK, 0 rows affected (0.67 sec)
+
+
+MariaDB [e15385lab04]> describe convocation;
++--------------------+--------------+------+-----+---------+-------+
+| Field              | Type         | Null | Key | Default | Extra |
++--------------------+--------------+------+-----+---------+-------+
+| last_name          | varchar(30)  | NO   |     | NULL    |       |
+| address            | varchar(100) | NO   |     | NULL    |       |
+| age                | varchar(4)   | NO   |     | NULL    |       |
+| reg_no             | varchar(10)  | NO   | MUL | NULL    |       |
+| convocation_reg_no | varchar(10)  | NO   | PRI | NULL    |       |
++--------------------+--------------+------+-----+---------+-------+
+5 rows in set (0.05 sec)
+
+
+3. Create a stored procedure to store the details about the students asonestudentatatimein the Convocation table when they register for the convocation. (In the registration a unique convocation registration number should be given to each student and at the same time Convocation Registration Number column in the Student table should be updated by inserting relevant registration number for that student.)
+
+
+Delimiter ##
+    -> Create procedure insert_values (
+    -> in last_name varchar(20),
+    -> in address varchar(100),
+    -> in age varchar(3),
+    -> in reg_no varchar(5),
+    -> in convocation_reg_no varchar(6))
+    -> begin insert into convocation (last_name,address,age,reg_no,convocation_reg_no) values (last_name,address,age,reg_no,convocation_reg_no);
+    -> end ##
+
+    Delimiter ;
+
+    Delimiter ##
+    -> create trigger insert_convo_reg_no after insert on convocation for each row begin
+    -> update student inner join convocation on student.reg_no=convocation.reg_no set student.convocation_reg_no=convocation.convocation_reg_no;
+    -> end ##
+
+    Delimiter ;
+
+    Call insert_values ('Deshapriya','10/19,Deiyannewela road,Badulla','22','425','1');
+
+    Call insert_values ('Ranaweera','40,Yasasiripura,Anuradhapura','24','312','2');
+
+    Call insert_values ('Gamage','500,Ruwanpura,Aggoda','23','473','3');
+
+    Call insert_values ('Rajapakshe','33A,spring valley,Nuwaraeliya','21','352','4');
+
+    Call insert_values ('Weerasinghe','12,Malsiripura,Kurunagala','24','456','5');
+
+select * from student;
++----------+--------+------+--------------------+-------+
+| name     | reg_no | gpa  | convocation_reg_no | class |
++----------+--------+------+--------------------+-------+
+| Kumudu   | 111    |  3.7 | NULL               | NULL  |
+| Kalpa    | 201    |  3.1 | NULL               | NULL  |
+| Kasun    | 210    |  3.4 | NULL               | NULL  |
+| Chithra  | 231    |  3.3 | NULL               | NULL  |
+| Chathura | 312    | 3.85 | 2                  | NULL  |
+| Rohani   | 324    |  3.7 | NULL               | NULL  |
+| Sidath   | 352    |  3.3 | 4                  | NULL  |
+| Sameera  | 425    | 3.25 | 1                  | NULL  |
+| Nalin    | 456    | 3.05 | 5                  | NULL  |
+| Lakmali  | 473    | 3.75 | 3                  | NULL  |
++----------+--------+------+--------------------+-------+
+
+
+mysql> select * from convocation;
++-------------+---------------------------------+-----+--------+--------------------+
+| last_name   | address                         | age | reg_no | convocation_reg_no |
++-------------+---------------------------------+-----+--------+--------------------+
+| Deshapriya  | 10/19,Deiyannewela road,Badulla | 22  | 425    | 1                  |
+| Ranaweera   | 40,Yasasiripura,Anuradhapura    | 24  | 312    | 2                  |
+| Gamage      | 500,Ruwanpura,Aggoda            | 23  | 473    | 3                  |
+| Rajapakshe  | 33A,spring valley,Nuwaraeliya   | 21  | 352    | 4                  |
+| Weerasinghe | 12,Malsiripura,Kurunagala       | 24  | 456    | 5                  |
++-------------+---------------------------------+-----+--------+--------------------+
+
+5. Create a view called Registered to retrieve the details Name, Registration Number, GPA, Convocation Registration Number, Address and Age of those students who have registered for the convocation. Observe the view with the respective data.
+
+
+Create view Registered as 
+    Select student.name,student.reg_no,student.gpa,student.convocation_reg_no,convocation.address,convocation.age from student inner join convocation 
+    on convocation.reg_no=student.reg_no where student.convocation_reg_no is not null;
+
+    Select * from registered;
++----------+--------+------+--------------------+---------------------------------+-----+
+| name     | reg_no | gpa  | convocation_reg_no | address                         | age |
++----------+--------+------+--------------------+---------------------------------+-----+
+| Sameera  | 425    | 3.25 | 1                  | 10/19,Deiyannewela road,Badulla | 22  |
+| Chathura | 312    | 3.85 | 2                  | 40,Yasasiripura,Anuradhapura    | 24  |
+| Lakmali  | 473    | 3.75 | 3                  | 500,Ruwanpura,Aggoda            | 23  |
+| Sidath   | 352    |  3.3 | 4                  | 33A,spring valley,Nuwaraeliya   | 21  |
+| Nalin    | 456    | 3.05 | 5                  | 12,Malsiripura,Kurunagala       | 24  |
++----------+--------+------+--------------------+---------------------------------+-----+
+
+6. Create a view called Not Registered to retrieve the details Name,Registration Number,GPA, Address and Age of those students who have not registered for the convocation. Observe the view with the respective data. 
+
+Create view notRegistered as select student.name,student.reg_no,student.gpa,convocation.address,convocation.age from student inner join convocation 
+    on convocation.reg_no=student.reg_no where student.convocation_reg_no is null;
+
+7. Create a table called LateRegistration with the same columns as Convocation table to store the details about the students who do the late registration.
+
+Create table LateRegistration(
+	last_name varchar(20) not null,
+	address varchar(100) not null,
+	age varchar(3) not null,
+	reg_no varchar(5) not null,
+	convocation_reg_no varchar(6) not null,
+
+	primary key(convocation_reg_no),
+	foreign key (reg_no) references student(reg_no) on delete cascade on update cascade
+    ); 
+
+MariaDB [e15385Lab04]> describe lateregistration ;
++--------------------+--------------+------+-----+---------+-------+
+| Field              | Type         | Null | Key | Default | Extra |
++--------------------+--------------+------+-----+---------+-------+
+| last_name          | varchar(20)  | NO   |     | NULL    |       |
+| address            | varchar(100) | NO   |     | NULL    |       |
+| age                | varchar(3)   | NO   |     | NULL    |       |
+| reg_no             | varchar(5)   | NO   | MUL | NULL    |       |
+| convocation_reg_no | varchar(6)   | NO   | PRI | NULL    |       |
++--------------------+--------------+------+-----+---------+-------+
+5 rows in set (0.01 sec)
+
+
+8. Write a trigger to monitor the state of LateRegistration table, so that after a late registration is done in this table, the Student table should be updated with the relevant Convocation RegistrationNumberfor that student
+
+  Delimiter ##
+    create trigger insert_late_convo_reg_no after insert on LateRegistration for each row begin
+    update student inner join LateRegistration on student.reg_no=LateRegistration.reg_no set student.convocation_reg_no=LateRegistration.convocation_reg_no;
+    end ##
+    Delimiter ;
+
+9. Perform the registration for Kasun,Kalpa,Kumudu,Rohani and Chithra with registration numbers 6, 7, 8, 9 and 10 respectively. Give suitable meaningful values for the rest of the columns for each of these students. Observe the updates made to the Student table. 
+
+Delimiter ##
+    	Create procedure late_insert_values (
+    	in last_name varchar(20),
+    	in address varchar(100),
+    	in age varchar(3),
+    	in late_reg_no varchar(5),
+    	in late_convocation_reg_no varchar(6))
+   	begin insert into LateRegistration (last_name,address,age,reg_no,convocation_reg_no) values (last_name,address,age,late_reg_no,late_convocation_reg_no);
+    	end ##
+
+	
+	Delimiter ;
+	Call late_insert_values ('Rathnayake','12B,Nelumkulama,Anuradhapura','25','201','7');
+
+	Call late_insert_values ('Weerakon','23/12,Athugala,Kurunagala','26','111','8');
+
+	Call late_insert_values ('Dissanayake','45A,Kaluaththa,kaluthara','22','324','9');
+
+	Call late_insert_values ('marasinghe','23B,Kirindiwala,Gampaha','23','231','10');
+Select * from student;
++----------+--------+------+--------------------+-------+
+| name     | reg_no | gpa  | convocation_reg_no | class |
++----------+--------+------+--------------------+-------+
+| Kumudu   | 111    |  3.7 | 8                  | NULL  |
+| Kalpa    | 201    |  3.1 | 7                  | NULL  |
+| Kasun    | 210    |  3.4 | 6                  | NULL  |
+| Chithra  | 231    |  3.3 | 10                 | NULL  |
+| Chathura | 312    | 3.85 | 2                  | NULL  |
+| Rohani   | 324    |  3.7 | 9                  | NULL  |
+| Sidath   | 352    |  3.3 | 4                  | NULL  |
+| Sameera  | 425    | 3.25 | 1                  | NULL  |
+| Nalin    | 456    | 3.05 | 5                  | NULL  |
+| Lakmali  | 473    | 3.75 | 3                  | NULL  |
++----------+--------+------+--------------------+-------+
+
+select * from lateregistration;
++--------------+------------------------------+-----+--------+--------------------+
+| last_name    | address                      | age | reg_no | convocation_reg_no |
++--------------+------------------------------+-----+--------+--------------------+
+| marasinghe   | 23B,Kirindiwala,Gampaha      | 23  | 231    | 10                 |
+| Weerasooriya | Polwatta,gampaha             | 23  | 210    | 6                  |
+| Rathnayake   | 12B,Nelumkulama,Anuradhapura | 25  | 201    | 7                  |
+| Weerakon     | 23/12,Athugala,Kurunagala    | 26  | 111    | 8                  |
+| Dissanayake  | 45A,Kaluaththa,kaluthara     | 22  | 324    | 9                  |
++--------------+------------------------------+-----+--------+--------------------+
+10. Create a stored procedure to and ﬁll the class column as follows.
+(a) GPA >=3.7 First class honors
+(b) GPA < 3.7 and GPA>=3.3 Second class honors-upper division
+ (c) GPA < 3.3 and GPA>=2.7 Second class honors-lower division
+ (d) GPA < 2.7 and GPA>=2.0 Third class honor 
+
+Create procedure update_class() begin
+    	update student set student.class='First Class honers' where gpa>=3.7;
+    	update student set student.class='Second class honors-upper division' where gpa<3.7 and gpa>=3.3;
+	update student set student.class='Second class honors-lower division' where gpa<3.3 and gpa>=2.7;
+	update student set student.class='Third class honors' where gpa<2.7 and gpa>=2.0;
+     end ##
+
+     Delimiter ;
+
+     Call update_class();
+
+
+mysql> Select * from student;
++----------+--------+------+--------------------+------------------------------------+
+| name     | reg_no | gpa  | convocation_reg_no | class                              |
++----------+--------+------+--------------------+------------------------------------+
+| Kumudu   | 111    |  3.7 | 8                  | First Class honers                 |
+| Kalpa    | 201    |  3.1 | 7                  | Second class honors-lower division |
+| Kasun    | 210    |  3.4 | 6                  | Second class honors-upper division |
+| Chithra  | 231    |  3.3 | 10                 | Second class honors-upper division |
+| Chathura | 312    | 3.85 | 2                  | First Class honers                 |
+| Rohani   | 324    |  3.7 | 9                  | First Class honers                 |
+| Sidath   | 352    |  3.3 | 4                  | Second class honors-upper division |
+| Sameera  | 425    | 3.25 | 1                  | Second class honors-lower division |
+| Nalin    | 456    | 3.05 | 5                  | Second class honors-lower division |
+| Lakmali  | 473    | 3.75 | 3                  | First Class honers                 |
++----------+--------+------+--------------------+------------------------------------+
+
+
+
+10. Create a stored procedure to and ﬁll the class column as follows. 
+(a) GPA >=3.7 First class honors
